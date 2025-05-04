@@ -7,16 +7,16 @@ from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
 import openai
 
-
-client = openai.OpenAI(api_key="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")
+conn_str = st.secrets["MYSQL_CONNECTION_STRING"]
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = openai.OpenAI(api_key=openai.api_key)
 
 def calculate_entropy(values):
     total = sum(values)
     probabilities = [v / total for v in values]
     return -sum(p * np.log2(p) if p > 0 else 0 for p in probabilities)
 def resumen_flujo_neto_y_ventas(rfc_key):
-    engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
-
+    engine = create_engine(conn_str)
     hoy = datetime.now()
     if hoy.day < 28:
         mes_analisis = hoy.replace(day=1) - timedelta(days=1)
@@ -78,7 +78,7 @@ generando un flujo neto de ${flujo_neto:,.2f}. Esto representa un cambio del {ca
 
 
 def resumen_proveedores(rfc_key):
-    engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
+    engine = create_engine(conn_str)
 
     hoy = datetime.now()
     if hoy.day < 28:
@@ -176,7 +176,7 @@ def calculate_entropy(values):
     return entropy
 
 def resumen_empresa(rfc_key):
-    engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
+    engine = create_engine(conn_str)
 
     hoy = pd.Timestamp.now()
     ultimo_mes_completo = hoy - MonthEnd(1)
@@ -299,7 +299,7 @@ Como analista financiero experto, haz un análisis unificado:
     )
     return resp.choices[0].message.content.strip()
 
-engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
+engine = create_engine(conn_str)
 @st.cache_data(show_spinner=False)
 def get_clients():
     df = pd.read_sql("SELECT rfc, name FROM clients", engine)
