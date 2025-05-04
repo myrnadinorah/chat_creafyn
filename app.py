@@ -11,6 +11,11 @@ conn_str = st.secrets["MYSQL_CONNECTION_STRING"]
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 client = openai.OpenAI(api_key=openai.api_key)
 
+@st.cache_data
+def get_invoice_columns():
+    # Lee la estructura de la tabla para confirmar nombres de columnas
+    return pd.read_sql("SHOW COLUMNS FROM invoices", engine)
+    
 def calculate_entropy(values):
     total = sum(values)
     probabilities = [v / total for v in values]
