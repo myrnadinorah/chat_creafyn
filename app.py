@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from sqlalchemy import create_engine
 from datetime import datetime, timedelta
-import numpy as np
 from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
-import pymysql
+import openai
+
+
+client = openai.OpenAI(api_key="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")
 
 def calculate_entropy(values):
     total = sum(values)
@@ -267,25 +270,51 @@ y el {pct_cancel_mes:.2f}% en el mes de análisis. Los ingresos provinieron prin
 
     return resumen_clientes
 
-st.title("Análisis Financiero por Cliente")
+def generar_analisis_gpt(rfc_key: str) -> str:
+    flujo = resumen_flujo_neto_y_ventas(rfc_key)
+    prov  = resumen_proveedores(rfc_key)
+    emp   = resumen_empresa(rfc_key)
+    prompt = f"""
+Empresa (RFC: {rfc_key}):
+
+— Flujo Neto y Ventas —
+{flujo}
+
+— Proveedores —
+{prov}
+
+— Clientes y Cancelaciones —
+{emp}
+
+Como analista financiero experto, haz un análisis unificado:
+"""
+    resp = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role":"system","content":"Eres un analista financiero experto."},
+            {"role":"user","content":prompt}
+        ],
+        temperature=0.7,
+        max_tokens=1024
+    )
+    return resp.choices[0].message.content.strip()
 
 engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
-dclients = pd.read_sql("SELECT rfc, name FROM clients", engine)
-engine.dispose()
 
-clientes = dclients['name'].tolist()
-cliente_sel = st.selectbox("Elige un cliente:", clientes)
+st.title("Análisis Financiero por Cliente")
+dclients = get_clients()
+sel = st.selectbox("Cliente:", dclients["name"])
+rfc = dclients.loc[dclients.name==sel, "rfc"].iloc[0]
 
-rfc_key = dclients.loc[dclients['name'] == cliente_sel, 'rfc'].iloc[0]
+for label, fn in [
+    ("Flujo Neto y Ventas", resumen_flujo_neto_y_ventas),
+    ("Proveedores", resumen_proveedores),
+    ("Clientes y Cancelaciones", resumen_empresa),
+]:
+    with st.expander(f"🔹 {label}"):
+        st.markdown(fn(rfc))
 
-with st.expander("🔹 Flujo Neto y Ventas"):
-    flujo = resumen_flujo_neto_y_ventas(rfc_key)
-    st.markdown(flujo)
-
-with st.expander("🔹 Resumen de Proveedores"):
-    prov = resumen_proveedores(rfc_key)
-    st.markdown(prov)
-
-with st.expander("🔹 Resumen de Clientes y Cancelaciones"):
-    emp = resumen_empresa(rfc_key)
-    st.markdown(emp)
+if st.button("🧠 Generar Análisis GPT"):
+    with st.spinner("Pensando…"):
+        st.markdown("### Análisis Unificado por GPT")
+        st.write(generar_analisis_gpt(rfc))
