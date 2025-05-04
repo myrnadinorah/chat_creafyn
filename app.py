@@ -300,7 +300,11 @@ Como analista financiero experto, haz un análisis unificado:
     return resp.choices[0].message.content.strip()
 
 engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
-
+@st.cache_data(show_spinner=False)
+def get_clients():
+    df = pd.read_sql("SELECT rfc, name FROM clients", engine)
+    return df
+    
 st.title("Análisis Financiero por Cliente")
 dclients = get_clients()
 sel = st.selectbox("Cliente:", dclients["name"])
