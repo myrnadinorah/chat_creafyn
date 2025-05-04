@@ -269,7 +269,7 @@ y el {pct_cancel_mes:.2f}% en el mes de análisis. Los ingresos provinieron prin
 
 st.title("Análisis Financiero por Cliente")
 
-engine = create_engine('mysql+pymysql://usuario:pass@host/db')
+engine = create_engine('mysql+pymysql://satws_extractor:LppgQWI22Txqzl1@db-cluster-momento-capital-prod.cluster-c7b6x1wx8cfw.us-east-1.rds.amazonaws.com/momento_capital')
 dclients = pd.read_sql("SELECT rfc, name FROM clients", engine)
 engine.dispose()
 
