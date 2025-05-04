@@ -305,6 +305,11 @@ Como analista financiero experto, haz un análisis unificado:
     return resp.choices[0].message.content.strip()
 
 engine = create_engine(conn_str)
+
+st.sidebar.markdown("### Columnas de invoices")
+cols = get_invoice_columns()
+st.sidebar.dataframe(cols)
+
 @st.cache_data(show_spinner=False)
 def get_clients():
     df = pd.read_sql("SELECT rfc, name FROM clients", engine)
