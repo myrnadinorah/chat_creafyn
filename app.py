@@ -274,6 +274,7 @@ def generar_analisis_gpt(rfc_key: str) -> str:
     flujo = resumen_flujo_neto_y_ventas(rfc_key)
     prov  = resumen_proveedores(rfc_key)
     emp   = resumen_empresa(rfc_key)
+
     prompt = f"""
 Empresa (RFC: {rfc_key}):
 
@@ -288,17 +289,19 @@ Empresa (RFC: {rfc_key}):
 
 Como analista financiero experto, haz un análisis unificado:
 """
-    resp = openai.ChatCompletion.create(
-        model="gpt-4o",
+
+    response = client.chat.completions.create(
+        model="gpt-4o",  # O "gpt-4" según tu plan
         messages=[
-            {"role":"system","content":"Eres un analista financiero experto."},
-            {"role":"user","content":prompt}
+            {"role": "system", "content": "Eres un analista financiero experto."},
+            {"role": "user", "content": prompt}
         ],
         temperature=0.7,
         max_tokens=1024
     )
-    return resp.choices[0].message.content.strip()
 
+    return response.choices[0].message.content
+    
 engine = create_engine(conn_str)
 
 @st.cache_data(show_spinner=False)
