@@ -319,7 +319,7 @@ for label, fn in [
     with st.expander(f"🔹 {label}"):
         st.markdown(fn(rfc))
 
-if st.button("🧠 Generar Análisis ChatGPT"):
+if st.button("🧠 Generar Análisis Chat"):
     with st.spinner("Pensando…"):
         st.markdown("### Análisis Unificado por GPT")
         st.write(generar_analisis_gpt(rfc))
