@@ -283,7 +283,7 @@ y el {pct_cancel_mes:.2f}% en el mes de análisis. Los ingresos provinieron prin
 
     return resumen_clientes
 
-def return_empleados(rfc_key):
+def empleados(rfc_key):
     engine = create_engine(conn_str)
     query_1 = "SELECT id, total, date FROM employees WHERE id LIKE %s"
     df = pd.read_sql(query_1, engine, params=(f'{rfc_key}-%',))
@@ -399,8 +399,9 @@ def generar_analisis_gpt(rfc_key: str) -> str:
     flujo = resumen_flujo_neto_y_ventas(rfc_key)
     prov  = resumen_proveedores(rfc_key)
     emp   = resumen_empresa(rfc_key)
-    emple = empleados(rfc_key)  # <- Ahora se incluye aquí
-
+    emple = empleados(rfc_key) 
+    fin = resumen_financieras(rfc_key)
+    
     prompt = f"""
 Empresa (RFC: {rfc_key}):
 
